@@ -15,6 +15,7 @@
 ## under the License.
 ############################################################################
 
+# bash init-workspace -e mnist-pytorch -i 127.0.0.1 -d .
 
 script_name=$(basename "${0}") # ${0}: Shell本身的文件名
 script_dir=$(realpath $(dirname "${0}"))
@@ -30,7 +31,6 @@ WS_DIR_PREFIX="ws-"
 # Help function
 help()
 {
-   # bash init-workspace -e mnist-pytorch -i 127.0.0.1 -d .
    echo ""
    echo "Usage: $script_name -e EXAMPLE-NAME [-i LICENSE-SERVER-IP] [-d PARENT-DIR]"
    echo -e "\t-e Name of the quick start example to run e.g. mnist-keras"
@@ -99,12 +99,14 @@ echo "Data and model files are generated for each node inside the workspace $ws_
 # Create network bridge
 echo "Creating docker network bridge $network_name."
 # 创建bridge网络
-${sudo} docker network create -d bridge $network_name
+# ${sudo} docker network create -d bridge $network_name # 没有sudo，不需要sudo
+docker network create -d bridge $network_name
 # ${?}: 显示上一个执行的命令（或程序）的返回值，这个值通常在0~255之间，0表示一切正常
 ret_val=${?}
 [ $ret_val -ne 0 ] && echo "Failed to create docker network bridge." && exit 1
 
 # Start spire server
+# 用于共享spire信任包
 echo "Starting spire server"
 $swarm_bin_dir/run-spire-server -d --name node-spire --network $network_name
 ret_val=${?}
@@ -115,6 +117,7 @@ echo "Waiting for spire server to initialize"
 sleep 5
 
 # Start Swarm Network node
+# swarm网络节点，用于确认节点状态
 echo "Starting Swarm Network node"
 $swarm_bin_dir/run-sn -d --name node-sn --network $network_name --host-ip node-sn --sentinel-ip node-sn --apls-ip $apls_ip -serverAddress node-spire -genJoinToken
 ret_val=${?}
