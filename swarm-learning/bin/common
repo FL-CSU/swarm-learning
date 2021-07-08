@@ -17,9 +17,12 @@
 
 
 # Enable extended pattern matching in case statements.
+# shopt 命令可以设置 shell 的可选参数, -s 表示开启
+# 如果开启 extglob 选项, shell 将启用扩展模式匹配, 可以识别正则
 shopt -s extglob
 
 # Enable case-insensitive matching in case statements.
+# 忽略字符串匹配中的大小写
 shopt -s nocasematch
 
 
@@ -196,6 +199,7 @@ isLocalhost()
 
 # Given an IP address and an image label, try and find a running container with
 # those attributes and, return a "docker exec" command that can connect to it.
+# 给定一个IP地址和一个镜像标签，尝试找到一个具有这些属性的正在运行的容器，并返回一个可以连接到它的“docker exec”命令。
 # Params:
 #   1. Image label.
 #   2. Optional image name. There could be several running container instances

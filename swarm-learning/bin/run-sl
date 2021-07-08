@@ -15,12 +15,14 @@
 ## under the License.
 ############################################################################
 
+# 每个节点独立运行
 
 progName=$(basename "${0}")
 progDir=$(realpath $(dirname "${0}"))
 
 
 # Source a bunch of code that is common to all our scripts.
+# 重新执行刚修改的初始化文件，使之立即生效，而不必注销并重新登录
 source "${progDir}/common"
 
 
@@ -28,8 +30,8 @@ funcCallOrder=("Common" "APLS" "SpireAgent" "Component")
 spireAgentType="sl-agent"
 
 
-internalFSPort=30305
-defaultAPIPort=30304
+internalFSPort=30305 # swarm learning 间互连
+defaultAPIPort=30304 # 连接network和swarm learning note
 
 containerDataDir="/platform/swarmml/data"
 containerModelDir="/platform/swarmml/model"
@@ -132,6 +134,7 @@ postprocessComponentOpts()
 
         # As a convenience, we automatically publish the FS port, when the user
         # specifies a host IP.
+        # 为了方便起见，当用户指定主机IP时，我们会自动发布FS端口。
         if isLocalhost "${hostIp}"
         then
             [[ -z "${slFsPort}" ]] && slFsPort=${internalFSPort}
@@ -141,7 +144,7 @@ postprocessComponentOpts()
     if [[ -n "${slPlatform}" ]]
     then
         case "${slPlatform,,}" in
-            pyt) image="${slPytImage}";;
+            pyt) image="${slPytImage}";; # pytorch
             tf) image="${slTFImage}";;
             *) error "--sl-platform: ${slPlatform}: unsupported platform";;
         esac
@@ -149,11 +152,14 @@ postprocessComponentOpts()
         image="${slTFImage}"
     fi
 
+    # 设置gpu
     [[ -n "${gpu}" ]] && envvar+=(-e "NVIDIA_VISIBLE_DEVICES=${gpu}")
     [[ -z "${gpu}" || "${slPlatform,,}" == "pyt" ]] && envvar+=(-e "NVIDIA_VISIBLE_DEVICES=")
 
     if [[ -z "${snIp}" ]]
     then
+        # 执行镜像操作，连接docker容器
+        # Swarm Network node
         snExec=$(genDockerExec \
             "${snImage}" "${snDockerName}" "" "Swarm Network node")
         snIp="$(${snExec} hostname -i | tr -d '\r\n')"

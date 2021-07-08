@@ -28,8 +28,8 @@ funcCallOrder=("Common" "Component")
 image="${spireImage}"
 
 
+#spireServerPort="8081"
 spireServerPort="8081"
-
 
 printComponentUsage()
 {
@@ -66,5 +66,9 @@ processComponentOpt()
     return ${?}
 }
 
-
+# 脚本名称叫test.sh 入参三个: 1 2 3
+# 运行test.sh 1 2 3后
+# $*为"1 2 3"（一起被引号包住）
+# $@为"1" "2" "3"（分别被包住）
+# $#为3（参数数量）
 main "${@}"

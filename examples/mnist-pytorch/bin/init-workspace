@@ -39,7 +39,6 @@ help()
    echo ""
    exit 1
 }
-
 # Process command options
 #
 while getopts "e:i:d:" opt
