@@ -23,13 +23,13 @@ progDir=$(realpath $(dirname "${0}"))
 # Source a bunch of code that is common to all our scripts.
 source "${progDir}/common"
 
-
+ 
 funcCallOrder=("Common" "Component")
 image="${spireImage}"
 
 
 #spireServerPort="8081"
-spireServerPort="8081"
+spireServerPort="38081" # spire server 端口
 
 printComponentUsage()
 {

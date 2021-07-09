@@ -50,6 +50,7 @@ id -Gn 2> /dev/null | grep "\(\<docker\>\)\|\(\<root\>\)" > /dev/null 2>&1
 
 
 # Order of process and usage functions to call.
+# 要调用的进程和使用函数的顺序
 funcCallOrder=()
 
 
@@ -220,6 +221,7 @@ isLocalhost()
 #   4. A descriptive name for the image - to include in error messages.
 genDockerExec()
 {
+    # 注释了所有需要sudo的地方
     # Command to get the "right" running instance of the image. We do not prefix
     # ${sudo} here because its position depends on whether we are running on the
     # local system on a remote one - for remote systems, the "sudo" should come
@@ -230,7 +232,9 @@ genDockerExec()
         dockerPSCmd+=" --filter=ancestor=${1}"
 
     # Determine whether we are dealing with a local or remote docker.
-    containerName="$(${sudo} ${dockerPSCmd})"
+    # 确定我们处理的是本地docker还是远程docker。
+#    containerName="$(${sudo} ${dockerPSCmd})"
+    containerName="$(${dockerPSCmd})"
 
     if [ -n "${containerName}" ]
     then
@@ -242,12 +246,16 @@ genDockerExec()
         # adds a carriage return to the output. This makes a comprehensive mess
         # of everything and so, should be removed before it can do any mischief.
         # The '\r' is sufficient. We have added the '\n' as a safety measure.
-        containerIP="$(${sudo}                                              \
-            docker exec -it ${containerName} hostname -i | tr -d '\r\n')"
-        containerFQDN="$(${sudo}                                            \
-            docker exec -it ${containerName} hostname -f | tr -d '\r\n')"
-        containerHostname="$(${sudo}                                        \
-            docker exec -it ${containerName} hostname | tr -d '\r\n')"
+#        containerIP="$(${sudo}                                              \
+#            docker exec -it ${containerName} hostname -i | tr -d '\r\n')"
+#        containerFQDN="$(${sudo}                                            \
+#            docker exec -it ${containerName} hostname -f | tr -d '\r\n')"
+#        containerHostname="$(${sudo}                                        \
+#            docker exec -it ${containerName} hostname | tr -d '\r\n')"
+
+        containerIP="$(docker exec -it ${containerName} hostname -i | tr -d '\r\n')"
+        containerFQDN="$(docker exec -it ${containerName} hostname -f | tr -d '\r\n')"
+        containerHostname="$(docker exec -it ${containerName} hostname | tr -d '\r\n')"
     fi
 
     if [[ -n "${3}" ]]
@@ -260,7 +268,8 @@ genDockerExec()
               "${3}" != "${containerHostname}" ]]
         then
             ssh="ssh ${3}"
-            containerName=$(${sudo} ${ssh} ${dockerPSCmd})
+#            containerName=$(${sudo} ${ssh} ${dockerPSCmd})
+            containerName=$(${ssh} ${dockerPSCmd})
             [[ -z "${containerName}" ]] && error "cannot contact ${4}"
         fi
     elif [[ -z "${containerName}" ]]
@@ -269,7 +278,8 @@ genDockerExec()
     fi
 
     # [ sudo ] [ ssh <remote-host> ] docker exec <container-name>.
-    echo "${sudo} ${ssh} docker exec ${containerName}"
+#    echo "${sudo} ${ssh} docker exec ${containerName}"
+    echo "${ssh} docker exec ${containerName}"
 
     return 0
 }
@@ -525,14 +535,16 @@ processOpts()
     # After reading through https://stackoverflow.com/questions/85880, we could
     # not decide whether "type" is better than "declare". So we adopted a very
     # scientific approach - we tossed a coin.
+    # 通读之后https://stackoverflow.com/questions/85880，我们无法决定“type”是否优于“declare”。所以我们采用了一种非常科学的方法——扔硬币。
+    # declare -F：仅打印函数名字，并输入到null中
     declare -F "${preprocessOptFunc}" > /dev/null && ${preprocessOptFunc}
 
     declare -F "${processOptFunc}" > /dev/null
-    if [ ${?} -eq 0 ]
+    if [ ${?} -eq 0 ] #  显示上一个执行的命令（或程序）的返回值，0表示一切正常
     then
         unprocessedOpts=()
 
-        while [ ${#} -gt 0 ]
+        while [ ${#} -gt 0 ] # 如果长度大于0
         do
             if [[ "${1}" =~ (-[^=]+)(=(.*)) ]]
             then
@@ -559,7 +571,8 @@ processOpts()
 
 dockerRun()
 {
-    ${sudo} docker run                                  \
+#    ${sudo} docker run                                  \
+    docker run                                  \
         ${rm}                                           \
         ${tty}                                          \
         ${hostname}                                     \
@@ -581,31 +594,40 @@ main()
 {
     # Command line parameters that we do not recognize. The caller should check
     # the value of this variable after we return and, process it suitably.
+    # 我们无法识别的命令行参数。调用者应该在我们返回后检查这个变量的值，并适当地处理它。
     unprocessedOpts=("${@}")
 
     # Bind mounted volumes for the container.
+    # 为容器挂载的卷
     bindMounts=()
 
     # Environment variables for the container.
+    # 容器的环境变量
     envvar=()
 
     # Metadata labels for the container.
+    # 容器的元数据标签
     labels=()
 
     # Exposed ports.
+    # 暴露端口
     ports=()
 
     # Arguments to pass to the container entry point.
+    # 传递到容器入口点的参数
     componentArgs=()
 
     for funcName in "${funcCallOrder[@]}"
     do
         processOpts "${funcName}" "${unprocessedOpts[@]}"
     done
-
+    # 判断 变量的值，是否为空
     [[ -z "${image}" ]] && error "internal error: no image specified"
 
-    dockerRun "${image}" "${componentArgs[@]}"
+    printf -- '---------st_test--------------'
+    echo "${componentArgs[@]}"
+    printf -- '------------------------------'
+    dockerRun "${image}" "${componentArgs[@]}" # 运行docker
 
     return 0
 }

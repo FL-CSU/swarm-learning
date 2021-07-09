@@ -31,8 +31,8 @@ funcCallOrder=("Common" "Component")
 image="${aplsImage}"
 
 
-aplsInternalPort="5814"
-
+#aplsInternalPort="5814" # 权限服务的端口
+aplsInternalPort="35814" # 权限服务的端口
 
 printComponentUsage()
 {

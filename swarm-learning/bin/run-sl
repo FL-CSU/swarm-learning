@@ -211,5 +211,5 @@ postprocessComponentOpts()
     return 0
 }
 
-
+# 运行command中的main函数
 main "${@}"
