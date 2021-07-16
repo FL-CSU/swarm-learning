@@ -1,5 +1,10 @@
 ## mnist-pytorch
 
+- example样例
+- 进入bin文件夹
+- bash init-workspace -e mnist-pytorch -i 127.0.0.1 -d .
+- ../../../swarm-learning/bin/run-sl --name node1-sl --network mnist-pytorch-net --host-ip node1-sl --sn-ip node-sn -e MAX_EPOCHS=5 --apls-ip 127.0.0.1 --serverAddress node-spire -genJoinToken --data-dir ./ws-mnist-pytorch/node1/app-data --model-dir ./ws-mnist-pytorch/node1/model --model-program mnist_pyt.py --sl-platform PYT
+
 This example runs decentralized training on MNIST *[[1]](README.md#References)* dataset for digit classification using PyTorch based Swarm Learning framework.
 
 The code for this example has been taken from *[[2]](README.md#References)* and modified to run on a Swarm Learning platform. The data files are in the ``swarm-learning-docs/examples/mnist-pytorch/app-data/`` directory. The model program, after conversion to Swarm Learning, is in ``swarm-learning-docs/examples/mnist-pytorch/model/`` and is called ``mnist_pyt.py``. 
